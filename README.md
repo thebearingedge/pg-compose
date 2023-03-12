@@ -14,3 +14,7 @@ up         # start services
 down *args # destroy services. use `down -v` to delete data volume
 connect    # shell into a psql client connected to pooler
 ```
+
+## demo
+
+![pg-compose](./pg-compose.png)

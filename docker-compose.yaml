@@ -11,7 +11,7 @@ services:
     healthcheck:
       test: pg_isready -U app -d app || exit 1 # exit 0 or 1 explicitly
       interval: 5s
-      start_period: 5s # give database 5 seconds before failures matter
+      start_period: 5s # give database 5 seconds before healthcheck matters
 
   admin:
     image: docker.io/sosedoff/pgweb:0.14.0
