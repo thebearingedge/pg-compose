@@ -9,9 +9,9 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: pg_isready -U app -d app || exit 1
+      test: pg_isready -U app -d app || exit 1 # exit 0 or 1 explicitly
       interval: 5s
-      start_period: 5s
+      start_period: 5s # give database 5 seconds before failures matter
 
   admin:
     image: docker.io/sosedoff/pgweb:0.14.0
@@ -30,7 +30,7 @@ services:
       POSTGRESQL_USERNAME: app
       POSTGRESQL_PASSWORD: app
       POSTGRESQL_DATABASE: app
-      PGBOUNCER_DATABASE: app
+      PGBOUNCER_DATABASE: app # expose backend database as `app`
     depends_on:
       database:
         condition: service_healthy
@@ -38,13 +38,13 @@ services:
   client:
     image: docker.io/postgres:15.2-alpine
     environment:
-      DATABASE_URL: postgres://app:app@pool:6432/app
+      DATABASE_URL: postgres://app:app@pool:6432/app # connect to pgbouncer
     depends_on:
       - pool
     command:
       - /bin/sh
       - -c
-      - "trap : TERM INT; sleep infinity & wait"
+      - "trap : TERM INT; sleep infinity & wait" # handle interrupts
 
 volumes:
   pg_data:
