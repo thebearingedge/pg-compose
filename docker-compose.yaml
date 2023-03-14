@@ -3,20 +3,21 @@ services:
   database:
     image: docker.io/postgres:15.2-alpine
     environment:
-      POSTGRES_DB: app
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pg_data:/var/lib/postgresql/data
     healthcheck:
-      test: pg_isready -U app -d app || exit 1 # exit 0 or 1 explicitly
+      # exit 0 or 1 explicitly
+      test: pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB} || exit 1
       interval: 5s
-      start_period: 5s # give database 5 seconds before healthcheck matters
+      start_period: 5s # give initdb 5 seconds before healthcheck matters
 
   admin:
     image: docker.io/sosedoff/pgweb:0.14.0
     environment:
-      PGWEB_DATABASE_URL: postgres://app:app@database/app?sslmode=disable
+      PGWEB_DATABASE_URL: ${PGWEB_DATABASE_URL}
     ports:
       - 8081:8081
     depends_on:
@@ -27,9 +28,9 @@ services:
     image: docker.io/bitnami/pgbouncer:1.18.0
     environment:
       POSTGRESQL_HOST: database
-      POSTGRESQL_USERNAME: app
-      POSTGRESQL_PASSWORD: app
-      POSTGRESQL_DATABASE: app
+      POSTGRESQL_USERNAME: ${POSTGRES_USER}
+      POSTGRESQL_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRESQL_DATABASE: ${POSTGRES_DB}
       PGBOUNCER_DATABASE: app # expose backend database as `app`
     depends_on:
       database:
@@ -38,7 +39,8 @@ services:
   client:
     image: docker.io/postgres:15.2-alpine
     environment:
-      DATABASE_URL: postgres://app:app@pool:6432/app # connect to pgbouncer
+      # connect to pgbouncer
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@pool:6432/app
     depends_on:
       - pool
     command:
